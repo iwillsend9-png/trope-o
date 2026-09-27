@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Viela da Taverna Velha</title>
+    <style>
+        :root {
+            --bg-color: #0c0a09;
+            --panel-bg: #1c1917;
+            --text-color: #d6d3d1;
+            --accent-color: #b91c1c;
+            --accent-hover: #dc2626;
+            --border-color: #44403c;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border-radius: 4px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: #78716c;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .story-box {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            min-height: 150px;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            background: #292524;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 12px 18px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-hover);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-bar {
+            font-size: 0.85rem;
+            color: #78716c;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>A Viela da Taverna Velha</h1>
+        <div class="status-bar">
+            <span id="location">Local: Entrada da Viela</span>
+            <span id="tension">Tensão: Baixa</span>
+        </div>
+        
+        <div id="story" class="story-box">Carregando sombras...</div>
+        
+        <div id="choices" class="choices">
+            <!-- Botões gerados via JS -->
+        </div>
+    </div>
+
+    <script>
+        const storyElement = document.getElementById('story');
+        const choicesElement = document.getElementById('choices');
+        const locationElement = document.getElementById('location');
+        const tensionElement = document.getElementById('tension');
+
+        let gameState = {
+            step: 'start'
+        };
+
+        const nodes = {
+            start: {
+                location: "Viela da Taverna Velha",
+                tension: "Sufocante",
+                text: "A Viela da Taverna Velha engole Serena com seu hálito azedo de vinho velho e ferrugem. As paredes parecem se fechar sobre ela, manchadas de umidade e fuligem. As tochas presas em pregos tortos oscilam ao vento, lançando sombras que se contorcem feito espectros.\n\nEla avança com cautela. O chão é um mosaico de pedras soltas, tábuas quebradas e restos de lixo — tudo misturado num labirinto de obstáculos. O som dos passos dela é quase inaudível, mas o silêncio ao redor amplifica cada respiração.",
+                choices: [
+                    { text: "Avançar focando na respiração e pisando com extrema cautela.", next: 'cautela' },
+                    { text: "Acelerar o passo para sair logo deste lugar fétido.", next: 'pressa' }
+                ]
+            },
+            cautela: {
+                location: "Trecho Central da Viela",
+                tension: "Moderada",
+                text: "Serena desacelera, medindo cada apoio para os pés. O labirinto de lixo e pedras soltas exige foco total. Ela desvia de uma tábua rangente e de uma corda esticada nas sombras.\n\nNo entanto, a cautela consome tempo, e o hálito da viela parece colar em sua pele.",
+                choices: [
+                    { text: "Continuar avançando rente à parede úmida.", next: 'quase_fim_cautela' }
+                ]
+            },
+            pressa: {
+                location: "Trecho Central da Viela",
+                tension: "Alta",
+                text: "Movida pela ânsia de escapar, Serena aperta o passo. As sombras parecem dançar mais rápido ao redor de sua silhueta.",
+                choices: [
+                    { text: "Continuar apressada pelas sombras.", next: 'queda' }
+                ]
+            },
+            quase_fim_cautela: {
+                location: "Ponto Crítico",
+                tension: "Crítica",
+                text: "Mesmo com todo o cuidado, o cansaço pesa. A bota de Serena roça em um obstáculo invisível no chão irregular...",
+                choices: [
+                    { text: "Sentir o corpo perder o equilíbrio...", next: 'queda' }
+                ]
+            },
+            queda: {
+                location: "O Abismo da Queda",
+                tension: "O Momento Decisivo",
+                text: "De repente, o salto da bota prende em algo — uma corda, uma tábua, um engano da pressa. O corpo dela pende para frente, o mundo gira, e é o momento do destino decidir.",
+                choices: [
+                    { text: "Tentar esticar os braços e amortecer a queda contra a parede.", next: 'final_sobrevivencia' },
+                    { text: "Deixar o corpo ir e tentar rolar para proteger o rosto.", next: 'final_rolamento' },
+                    { text: "Aceitar a gravidade e focar em proteger o artefato guardado no sobretudo.", next: 'final_misterio' }
+                ]
+            },
+            final_sobrevivencia: {
+                location: "Sombra da Viela",
+                tension: "Alívio Sombrio",
+                text: "O impacto é seco e doloroso contra a alvenaria úmida. Serena respira fundo, sentindo o gosto de fuligem e sangue no canto dos lábios. Ela sobreviveu à armadilha da viela, mas sua presença ali não passou despercebida...\n\n[FIM DO CAPÍTULO 1 - Você sobreviveu à Viela.]",
+                choices: [
+                    { text: "Jogar novamente", next: 'start' }
+                ]
+            },
+            final_rolamento: {
+                location: "Lamaçal da Viela",
+                tension: "Resiliência",
+                text: "O rolamento é desajeitado em meio aos detritos, mas evita o peor. Serena se levanta rapidamente, com o sobretudo manchado de lama e lixo, enquanto o eco do seu tropeço desvanece na escuridão.\n\n[FIM DO CAPÍTULO 1 - Uma fuga por pouco.]",
+                choices: [
+                    { text: "Jogar novamente", next: 'start' }
+                ]
+            },
+            final_misterio: {
+                location: "Profundezas da Taverna Velha",
+                tension: "Desconhecida",
+                text: "Ao proteger o item oculto, Serena despenca de forma mais dura, mas o objeto permanece intacto. No silêncio que se segue à queda, um som metálico responde logo adiante na escuridão... algo a aguardava.\n\n[FIM DO CAPÍTULO 1 - Um segredo preservado.]",
+                choices: [
+                    { text: "Jogar novamente", next: 'start' }
+                ]
+            }
+        };
+
+        function updateGame(nodeKey) {
+            const node = nodes[nodeKey];
+            locationElement.innerText = `Local: ${node.location}`;
+            tensionElement.innerText = `Tensão: ${node.tension}`;
+            storyElement.innerText = node.text;
+
+            choicesElement.innerHTML = '';
+            node.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.innerText = choice.text;
+                button.onclick = () => updateGame(choice.next);
+                choicesElement.appendChild(button);
+            });
+        }
+
+        // Inicializar o jogo
+        updateGame('start');
+    </script>
+</body>
+</html>
